@@ -1,4 +1,10 @@
-import React, { createContext, ReactNode, useContext, useState } from "react"
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 
 interface AuthContextType {
   token: string | null
@@ -11,7 +17,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [token, setToken] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem("token")
+  )
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token)
+    } else {
+      localStorage.removeItem("token")
+    }
+  }, [token])
 
   const login = (token: string) => setToken(token)
   const logout = () => setToken(null)
