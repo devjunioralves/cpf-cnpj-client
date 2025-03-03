@@ -6,9 +6,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
-import axios from "axios"
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { registerUser } from "../services/authService"
+import { isFormValid } from "../utils/validators"
 
 const Register = () => {
   const [username, setUsername] = useState("")
@@ -20,31 +21,22 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!username || !email || !password) {
-      setError("Todos os campos são obrigatórios")
-      return
-    }
-
-    if (!isValidEmail(email)) {
-      setError("Email inválido")
+    const { valid, message } = isFormValid(username, email, password)
+    if (!valid) {
+      setError(message)
       return
     }
 
     try {
-      await axios.post("/api/register", {
-        username,
-        email,
-        password,
-      })
+      await registerUser(username, email, password)
       navigate("/login")
-    } catch {
-      setError("Erro ao registrar usuário")
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError("An unknown error occurred")
+      }
     }
-  }
-
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
-    return emailRegex.test(email)
   }
 
   return (
