@@ -1,8 +1,10 @@
 import {
+  Alert,
   Button,
   Container,
   Grid,
   Paper,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material"
@@ -16,7 +18,17 @@ const Register = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [feedbackMessage, setFeedbackMessage] = useState<string>("")
+  const [feedbackSeverity, setFeedbackSeverity] = useState<"success" | "error">(
+    "error"
+  )
+  const [openSnackbar, setOpenSnackbar] = useState(false)
   const navigate = useNavigate()
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedUsername = e.target.value.replace(/[^a-zA-Z0-9_]/g, "")
+    setUsername(formattedUsername)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,13 +41,22 @@ const Register = () => {
 
     try {
       await registerUser(username, email, password)
-      navigate("/login")
+
+      setFeedbackMessage("Registro realizado com sucesso!")
+      setFeedbackSeverity("success")
+      setOpenSnackbar(true)
+
+      setTimeout(() => {
+        navigate("/login")
+      }, 3000)
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message)
+        setFeedbackMessage(err.message)
       } else {
-        setError("An unknown error occurred")
+        setFeedbackMessage("Ocorreu um erro desconhecido.")
       }
+      setFeedbackSeverity("error")
+      setOpenSnackbar(true)
     }
   }
 
@@ -61,7 +82,7 @@ const Register = () => {
                 label="Nome de Usuário"
                 variant="outlined"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={handleUsernameChange}
                 fullWidth
                 required
                 margin="normal"
@@ -116,6 +137,20 @@ const Register = () => {
           </Grid>
         </form>
       </Paper>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={feedbackSeverity}
+          sx={{ width: "100%" }}
+        >
+          {feedbackMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   )
 }

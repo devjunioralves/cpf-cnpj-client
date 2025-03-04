@@ -1,8 +1,10 @@
 import {
+  Alert,
   Button,
   Container,
   Grid,
   Paper,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material"
@@ -15,6 +17,11 @@ const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [feedbackMessage, setFeedbackMessage] = useState<string>("")
+  const [feedbackSeverity, setFeedbackSeverity] = useState<"success" | "error">(
+    "error"
+  )
+  const [openSnackbar, setOpenSnackbar] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
 
@@ -29,10 +36,23 @@ const Login = () => {
     try {
       const token = await loginUser(username, password)
       login(token)
-      navigate("/")
+
+      setFeedbackMessage("Login realizado com sucesso!")
+      setFeedbackSeverity("success")
+      setOpenSnackbar(true)
+
+      setTimeout(() => {
+        navigate("/")
+      }, 3000)
     } catch {
-      setError("Email ou senha incorretos")
+      setFeedbackMessage("Email ou senha incorretos")
+      setFeedbackSeverity("error")
+      setOpenSnackbar(true)
     }
+  }
+
+  const handleRegisterRedirect = () => {
+    navigate("/register")
   }
 
   return (
@@ -92,9 +112,33 @@ const Login = () => {
                 Entrar
               </Button>
             </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="text"
+                sx={{ backgroundColor: "secondary.main", color: "white" }}
+                fullWidth
+                onClick={handleRegisterRedirect}
+              >
+                Não tem uma conta? Cadastre-se
+              </Button>
+            </Grid>
           </Grid>
         </form>
       </Paper>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={feedbackSeverity}
+          sx={{ width: "100%" }}
+        >
+          {feedbackMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   )
 }
